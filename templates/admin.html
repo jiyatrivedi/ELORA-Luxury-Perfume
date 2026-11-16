@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Atelier | ELORA Luxury Perfume</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <style>
+    .admin-stat-val, .table-num { font-family: 'Poppins', sans-serif; }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar scrolled" id="navbar" role="navigation" aria-label="Main navigation">
+    <div class="navbar-inner">
+      <a href="{{ url_for('index') }}" class="navbar-logo" aria-label="ELORA home">ELORA</a>
+      <ul class="navbar-nav" role="list">
+        <li><a href="{{ url_for('index') }}" class="nav-link">&larr; Return to Store</a></li>
+        <li><a href="#admin-orders" class="nav-link active">Orders Ledger</a></li>
+        <li><a href="#admin-products" class="nav-link">Catalog Inventory</a></li>
+        <li><a href="#admin-add-product" class="nav-link">Add Fragrance</a></li>
+      </ul>
+      <div class="navbar-actions">
+        <span class="admin-nav-role" style="font-size:0.65rem;letter-spacing:0.18em;color:var(--color-gold);text-transform:uppercase;">
+          Atelier Administrator
+        </span>
+        <a href="{{ url_for('logout') }}" class="nav-logout-btn">Logout</a>
+        <button class="icon-btn hamburger" id="menu-btn" aria-label="Open navigation menu" aria-expanded="false"
+          aria-controls="mobile-menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+    <ul role="list">
+      <li><a href="{{ url_for('index') }}" class="mobile-nav-link">&larr; Return to Store</a></li>
+      <li><a href="#admin-orders" class="mobile-nav-link">Orders Ledger</a></li>
+      <li><a href="#admin-products" class="mobile-nav-link">Catalog Inventory</a></li>
+      <li><a href="#admin-add-product" class="mobile-nav-link">Add Fragrance</a></li>
+      <li class="mobile-auth-divider"></li>
+      <li><a href="{{ url_for('profile') }}" class="mobile-nav-auth-link">My Profile</a></li>
+      <li><a href="{{ url_for('logout') }}" class="mobile-nav-logout">Logout</a></li>
+    </ul>
+  </div>
+
+  <main class="admin-page">
+    <div class="admin-inner">
+
+      <div class="checkout-header">
+        <span class="admin-badge">Administrative Atelier Portal</span>
+        <h1 class="checkout-title">Executive Dashboard.</h1>
+        <p style="font-size:0.85rem;color:var(--color-muted);margin-top:0.4rem;">
+          Real-time oversight of fragrance orders, client ledgers, and catalog inventory.
+        </p>
+      </div>
+
+      <!-- Flash Notifications -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div style="margin-bottom:2rem;">
+        {% for category, message in messages %}
+        <div class="flash flash-{{ category }}" style="margin-bottom:0.5rem;">
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% endwith %}
+
+      <!-- 4 Stat Summary Cards -->
+      <div class="admin-stats-grid">
+        <div class="admin-stat-card">
+          <span class="form-label">Total Gross Revenue</span>
+          <div class="admin-stat-val gold">${{ total_revenue | int }}</div>
+        </div>
+        <div class="admin-stat-card">
+          <span class="form-label">Total Orders Handled</span>
+          <div class="admin-stat-val">{{ total_orders }}</div>
+        </div>
+        <div class="admin-stat-card">
+          <span class="form-label">Fragrances in Catalog</span>
+          <div class="admin-stat-val">{{ total_products }}</div>
+        </div>
+        <div class="admin-stat-card">
+          <span class="form-label">Registered Connoisseurs</span>
+          <div class="admin-stat-val">{{ total_users }}</div>
+        </div>
+      </div>
+
+      <!-- SECTION 1: ORDERS LEDGER -->
+      <section id="admin-orders" style="margin-top:4rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+          <div>
+            <p class="section-label" style="margin-bottom:0.25rem;">Orders Ledger</p>
+            <h2 style="font-family:var(--font-serif);font-size:1.8rem;color:var(--color-text);font-weight:300;">
+              Recent Orders &amp; Fulfillment
+            </h2>
+          </div>
+          <span style="font-size:0.7rem;color:var(--color-muted);">Showing recent {{ recent_orders | length }} entries</span>
+        </div>
+
+        <div class="admin-table-card">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Order Number</th>
+                <th>Date &amp; Time</th>
+                <th>Client</th>
+                <th>Total</th>
+                <th>Payment</th>
+                <th>Status</th>
+                <th>Update Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if recent_orders %}
+              {% for o in recent_orders %}
+              <tr>
+                <td style="font-family:var(--font-serif);color:var(--color-gold);letter-spacing:0.05em;">
+                  {{ o.order_number }}
+                </td>
+                <td style="font-size:0.75rem;color:var(--color-muted);">
+                  {{ o.created_at }}
+                </td>
+                <td>
+                  <strong>{{ o.full_name }}</strong><br>
+                  <span style="font-size:0.7rem;color:var(--color-muted);">{{ o.email }} &bull; {{ o.phone }}</span>
+                </td>
+                <td class="table-num" style="color:var(--color-gold-light);font-size:0.95rem;">
+                  ${{ o.total | int }}
+                </td>
+                <td style="font-size:0.75rem;color:var(--color-muted);">
+                  {{ o.payment_method }}
+                </td>
+                <td>
+                  <span class="status-badge status-{{ o.status }}" style="text-transform:capitalize;">
+                    {{ o.status }}
+                  </span>
+                </td>
+                <td>
+                  <form method="POST" action="{{ url_for('admin_update_order_status', order_id=o.id) }}" style="display:flex;gap:0.4rem;">
+                    <select name="status" class="admin-select">
+                      <option value="confirmed" {% if o.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                      <option value="processing" {% if o.status == 'processing' %}selected{% endif %}>Processing</option>
+                      <option value="dispatched" {% if o.status == 'dispatched' %}selected{% endif %}>Dispatched</option>
+                      <option value="delivered" {% if o.status == 'delivered' %}selected{% endif %}>Delivered</option>
+                      <option value="cancelled" {% if o.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                    <button type="submit" class="btn-discover" style="padding:0.35rem 0.6rem;font-size:0.55rem;">
+                      Save
+                    </button>
+                  </form>
+                </td>
+                <td>
+                  <a href="{{ url_for('order_confirmation', order_number=o.order_number) }}" class="btn-discover" style="padding:0.4rem 0.8rem;font-size:0.55rem;white-space:nowrap;">
+                    View Receipt
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td colspan="8" style="text-align:center;padding:3rem;color:var(--color-muted);">
+                  No orders recorded yet.
+                </td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SECTION 2: CATALOG INVENTORY -->
+      <section id="admin-products" style="margin-top:5rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+          <div>
+            <p class="section-label" style="margin-bottom:0.25rem;">Inventory Control</p>
+            <h2 style="font-family:var(--font-serif);font-size:1.8rem;color:var(--color-text);font-weight:300;">
+              Catalog Management
+            </h2>
+          </div>
+          <a href="#admin-add-product" class="btn-primary" style="padding:0.6rem 1.5rem;font-size:0.6rem;">
+            + Add New Fragrance
+          </a>
+        </div>
+
+        <div class="admin-table-card">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Flacon</th>
+                <th>ID / Name</th>
+                <th>Category &amp; Scent Family</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Featured</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in products %}
+              <tr>
+                <td>
+                  <img src="{{ p.image }}" alt="{{ p.name }}" style="width:40px;height:40px;object-fit:contain;background:rgba(9,8,10,0.8);border:1px solid var(--color-border);" />
+                </td>
+                <td>
+                  <strong>{{ p.name }}</strong><br>
+                  <span style="font-size:0.68rem;color:var(--color-muted);">ID: {{ p.id }}</span>
+                </td>
+                <td style="font-size:0.75rem;color:var(--color-muted);">
+                  {{ p.category }} &bull; {{ p.scent_family }}
+                </td>
+                <td class="table-num" style="color:var(--color-gold);">
+                  ${{ p.price | int }}
+                </td>
+                <td class="table-num">
+                  {% if p.stock < 20 %}
+                  <span style="color:#c85050;">{{ p.stock }} units</span>
+                  {% else %}
+                  <span style="color:#6ec98a;">{{ p.stock }} units</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if p.featured %}
+                  <span style="color:var(--color-gold);">&#9733; Featured</span>
+                  {% else %}
+                  <span style="color:var(--color-muted);">Standard</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div style="display:flex;gap:0.5rem;">
+                    <a href="{{ url_for('product_detail', product_id=p.id) }}" class="btn-discover" style="padding:0.35rem 0.65rem;font-size:0.55rem;">
+                      View
+                    </a>
+                    <form method="POST" action="{{ url_for('admin_delete_product', product_id=p.id) }}" onsubmit="return confirm('Archive fragrance {{ p.name }} from catalog?');">
+                      <button type="submit" style="color:#c85050;font-size:0.65rem;padding:0.35rem 0.6rem;border:1px solid rgba(200,80,80,0.3);background:transparent;cursor:pointer;">
+                        Delete
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SECTION 3: ADD NEW FRAGRANCE FORM -->
+      <section id="admin-add-product" style="margin-top:5rem;">
+        <div style="margin-bottom:1.5rem;">
+          <p class="section-label" style="margin-bottom:0.25rem;">New Creation</p>
+          <h2 style="font-family:var(--font-serif);font-size:1.8rem;color:var(--color-text);font-weight:300;">
+            Introduce a New Fragrance to the Catalog
+          </h2>
+        </div>
+
+        <div class="checkout-form-card">
+          <form method="POST" action="{{ url_for('admin_add_product') }}">
+            <div class="form-grid">
+              <div class="form-field">
+                <label class="form-label" for="new-pid">Product Identifier (Slug) *</label>
+                <input class="form-input" type="text" id="new-pid" name="id" placeholder="e.g. celestia" required />
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="new-pname">Fragrance Name *</label>
+                <input class="form-input" type="text" id="new-pname" name="name" placeholder="e.g. ELORA CÉLESTIA" required />
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="new-price">Price ($ USD) *</label>
+                <input class="form-input" type="number" id="new-price" name="price" placeholder="195" step="1" required />
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="new-stock">Initial Atelier Stock</label>
+                <input class="form-input" type="number" id="new-stock" name="stock" value="40" />
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="new-cat">Category</label>
+                <select id="new-cat" name="category" class="form-input">
+                  <option value="Eau de Parfum">Eau de Parfum</option>
+                  <option value="Extrait de Parfum">Extrait de Parfum</option>
+                  <option value="Parfum Cologne">Parfum Cologne</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="new-fam">Scent Family</label>
+                <select id="new-fam" name="scent_family" class="form-input">
+                  <option value="Woody & Amber">Woody &amp; Amber</option>
+                  <option value="Floral & Fresh">Floral &amp; Fresh</option>
+                  <option value="Oriental & Spiced">Oriental &amp; Spiced</option>
+                  <option value="Deep Oud & Leather">Deep Oud &amp; Leather</option>
+                </select>
+              </div>
+
+              <div class="form-field full-width">
+                <label class="form-label" for="new-img">Flacon Image Path</label>
+                <input class="form-input" type="text" id="new-img" name="image" value="/static/images/elora-hero.png" />
+              </div>
+
+              <div class="form-field full-width">
+                <label class="form-label" for="new-tagline">Poetic Tagline</label>
+                <input class="form-input" type="text" id="new-tagline" name="tagline" placeholder="e.g. Celestial white floral radiating with amber crystal." />
+              </div>
+
+              <div class="form-field full-width">
+                <label class="form-label" for="new-desc">Olfactory Narrative Description</label>
+                <textarea class="form-input" id="new-desc" name="description" rows="3" placeholder="Describe the composition, emotions, and evolution of the fragrance..."></textarea>
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="new-top">Top Notes</label>
+                <input class="form-input" type="text" id="new-top" name="top_notes" placeholder="e.g. White Peach, Pink Pepper, Neroli" />
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="new-heart">Heart Notes</label>
+                <input class="form-input" type="text" id="new-heart" name="heart_notes" placeholder="e.g. Grasse Jasmine, Orange Blossom" />
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="new-base">Base Notes</label>
+                <input class="form-input" type="text" id="new-base" name="base_notes" placeholder="e.g. White Amber, Cashmere Musk, Vanilla" />
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="new-notes-list">Short Notes Summary (Bullet style)</label>
+                <input class="form-input" type="text" id="new-notes-list" name="notes_list" placeholder="e.g. White Peach &bull; Jasmine &bull; Amber" />
+              </div>
+
+              <div class="form-field full-width">
+                <label style="display:flex;align-items:center;gap:0.6rem;font-size:0.75rem;color:var(--color-muted);cursor:pointer;">
+                  <input type="checkbox" name="featured" checked style="accent-color:var(--color-gold);" />
+                  Feature prominently on the Homepage Signature Collection
+                </label>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-primary" style="margin-top:2rem;padding:1.1rem 2.5rem;">
+              Register Fragrance in Catalog
+            </button>
+          </form>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p class="footer-logo">ELORA</p>
+      <p class="footer-copy">&copy; {{ now_year }} ELORA Atelier Administration. Confidential &bull; Internal Use Only.</p>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
+

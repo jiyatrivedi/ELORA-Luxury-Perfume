@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Sign in to your ELORA account and continue your luxury fragrance journey." />
+  <title>Login | ELORA Luxury Perfume</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar scrolled" id="navbar" role="navigation" aria-label="Main navigation">
+    <div class="navbar-inner">
+      <a href="{{ url_for('index') }}" class="navbar-logo" aria-label="ELORA home">ELORA</a>
+      <ul class="navbar-nav" role="list">
+        <li><a href="{{ url_for('index') }}#home" class="nav-link">Home</a></li>
+        <li><a href="{{ url_for('index') }}#collection" class="nav-link">Collection</a></li>
+        <li><a href="{{ url_for('index') }}#our-story" class="nav-link">Our Story</a></li>
+        <li><a href="{{ url_for('index') }}#contact" class="nav-link">Contact</a></li>
+      </ul>
+      <div class="navbar-actions">
+        <div class="navbar-auth">
+          <a href="{{ url_for('login') }}" class="nav-auth-link" style="color:var(--color-gold);">Login</a>
+          <a href="{{ url_for('signup') }}" class="nav-auth-signup">Sign Up</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- AUTH PAGE -->
+  <main class="auth-page" id="login-page">
+    <div class="auth-card">
+
+      <p class="auth-card-eyebrow">Welcome Back to ELORA</p>
+      <h1 class="auth-card-title">Sign in to<br>your account.</h1>
+      <p class="auth-card-subtitle">
+        Your signature scent awaits.<br>
+        Continue your private fragrance journey.
+      </p>
+
+      <!-- Flash messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul class="auth-flash-list" role="list">
+            {% for category, message in messages %}
+              <li class="auth-flash-item auth-flash-{{ category }}">
+                {% if category == 'success' %}
+                  <svg class="auth-flash-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                       viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                {% else %}
+                  <svg class="auth-flash-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                       viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                {% endif %}
+                {{ message }}
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+
+      <!-- Login form -->
+      <form class="auth-form" id="login-form" method="POST" action="{{ url_for('login') }}">
+        <input type="hidden" name="next" value="{{ next_url or '' }}" />
+
+        <!-- Email -->
+        <div class="auth-field">
+          <label class="auth-label" for="login-email">Email Address</label>
+          <input
+            class="auth-input"
+            type="email"
+            id="login-email"
+            name="email"
+            placeholder="e.g. julian@example.com"
+            value="{{ email | default('') }}"
+            autocomplete="email"
+            required
+          />
+        </div>
+
+        <!-- Password -->
+        <div class="auth-field">
+          <label class="auth-label" for="login-password">Password</label>
+          <div class="auth-password-wrap">
+            <input
+              class="auth-input"
+              type="password"
+              id="login-password"
+              name="password"
+              placeholder="Your confidential password"
+              autocomplete="current-password"
+              required
+            />
+            <button type="button" class="auth-toggle-pw" id="toggle-login-pw"
+                    aria-label="Show or hide password">
+              <svg class="eye-open" xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+                   viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg class="eye-close" xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+                   viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="auth-submit-btn" id="login-submit">
+          <span>Sign In</span>
+        </button>
+
+        <div class="auth-divider">
+          <span class="auth-divider-text">New to ELORA?</span>
+        </div>
+
+        <p class="auth-redirect">
+          <a href="{{ url_for('signup') }}" id="goto-signup">Create an Atelier Account</a>
+        </p>
+
+      </form>
+    </div>
+  </main>
+
+  <script>
+    const toggleBtn = document.getElementById('toggle-login-pw');
+    const pwInput = document.getElementById('login-password');
+    if (toggleBtn && pwInput) {
+      toggleBtn.addEventListener('click', () => {
+        const showing = toggleBtn.classList.toggle('showing');
+        pwInput.type = showing ? 'text' : 'password';
+      });
+    }
+  </script>
+</body>
+</html>

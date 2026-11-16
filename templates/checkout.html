@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Complete your ELORA luxury fragrance order with white-glove delivery." />
+  <title>Checkout | ELORA Luxury Perfume</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <style>
+    .summary-item-price, .summary-item-qty-num, .summary-total-value, #summary-item-count, #summary-discount-val {
+      font-family: 'Poppins', sans-serif;
+    }
+    .checkout-page {
+      min-height: 100vh;
+      background: radial-gradient(ellipse 70% 40% at 50% 0%, rgba(30,18,8,0.55) 0%, transparent 65%), var(--color-bg);
+      padding: calc(var(--nav-h) + 3.5rem) clamp(1rem, 4vw, 3rem) 6rem;
+    }
+    .checkout-inner { max-width: 1120px; margin: 0 auto; }
+    .checkout-header { margin-bottom: 2.5rem; }
+    .checkout-eyebrow {
+      font-size: 0.6rem; font-weight: 500; letter-spacing: 0.38em;
+      text-transform: uppercase; color: var(--color-gold);
+      display: flex; align-items: center; gap: 0.9rem; margin-bottom: 0.8rem;
+    }
+    .checkout-eyebrow::before {
+      content:''; display:block; width:24px; height:1px;
+      background:var(--color-gold); flex-shrink:0;
+    }
+    .checkout-title {
+      font-family: var(--font-serif);
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 300; color: var(--color-text);
+      line-height: 1.1;
+    }
+    .checkout-grid {
+      display: grid;
+      grid-template-columns: 1fr min(400px, 40%);
+      gap: clamp(1.5rem, 3vw, 3rem);
+      align-items: start;
+    }
+    .checkout-form-card {
+      background: rgba(22,18,17,0.7);
+      border: 1px solid var(--color-border);
+      padding: 2.2rem;
+      position: relative;
+    }
+    .checkout-form-card::before {
+      content:''; position:absolute; top:0; left:0; width:50px; height:1px;
+      background:linear-gradient(90deg, var(--color-gold), transparent);
+    }
+    .form-section-title {
+      font-size: 0.6rem; font-weight: 500; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--color-gold);
+      margin-bottom: 1.4rem; padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .form-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem;
+    }
+    .form-grid .full-width { grid-column: 1 / -1; }
+    .form-field { display: flex; flex-direction: column; gap: 0.45rem; }
+    .form-label {
+      font-size: 0.58rem; font-weight: 500; letter-spacing: 0.28em;
+      text-transform: uppercase; color: var(--color-muted);
+    }
+    .form-input {
+      width: 100%; background: rgba(9,8,10,0.6);
+      border: 1px solid var(--color-border); color: var(--color-text);
+      font-family: var(--font-sans); font-size: 0.85rem; font-weight: 300;
+      padding: 0.8rem 1rem; border-radius: 1px; outline: none;
+      transition: border-color var(--ease);
+    }
+    .form-input:focus { border-color: var(--color-gold); }
+
+    .payment-option-card {
+      display: flex; align-items: center; gap: 0.85rem;
+      padding: 0.95rem 1.1rem; background: rgba(9,8,10,0.5);
+      border: 1px solid var(--color-border); cursor: pointer;
+      transition: border-color var(--ease);
+    }
+    .payment-option-card:hover { border-color: var(--color-gold); }
+
+    .order-summary-card {
+      background: rgba(22,18,17,0.75); border: 1px solid var(--color-border);
+      padding: 2rem; position: sticky; top: calc(var(--nav-h) + 1.5rem);
+    }
+    .summary-title {
+      font-size: 0.6rem; font-weight: 500; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--color-gold);
+      margin-bottom: 1.2rem; padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .summary-item {
+      display: flex; align-items: center; gap: 1rem; padding: 0.85rem 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .summary-item-img {
+      width: 48px; height: 48px; background: rgba(9,8,10,0.8);
+      border: 1px solid var(--color-border); display: flex;
+      align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .summary-item-img img { width: 36px; height: 36px; object-fit: contain; }
+    .summary-item-info { flex: 1; min-width: 0; }
+    .summary-item-name {
+      font-family: var(--font-serif); font-size: 0.95rem; color: var(--color-text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .summary-item-qty { font-size: 0.65rem; color: var(--color-muted); }
+    .summary-item-price { font-size: 0.9rem; color: var(--color-gold-light); }
+    .summary-row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.78rem; color: var(--color-muted); padding: 0.5rem 0;
+    }
+    .summary-total-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-top: 0.6rem; padding-top: 1rem; border-top: 1px solid var(--color-border);
+    }
+    .summary-total-label { font-size: 0.65rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--color-muted); }
+    .summary-total-value { font-family: var(--font-serif); font-size: 1.6rem; color: var(--color-gold); }
+
+    .checkout-submit-btn {
+      display: block; width: 100%; margin-top: 2rem; padding: 1.15rem;
+      background: var(--color-gold); border: 1px solid var(--color-gold);
+      color: var(--color-bg); font-family: var(--font-sans); font-size: 0.65rem;
+      font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase;
+      cursor: pointer; transition: all var(--ease);
+    }
+    .checkout-submit-btn:hover { background: var(--color-gold-light); border-color: var(--color-gold-light); }
+    .checkout-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    @media (max-width: 900px) {
+      .checkout-grid { grid-template-columns: 1fr; }
+      .order-summary-card { position: static; }
+      .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar scrolled" id="navbar" role="navigation" aria-label="Main navigation">
+    <div class="navbar-inner">
+      <a href="{{ url_for('index') }}" class="navbar-logo" aria-label="ELORA home">ELORA</a>
+      <ul class="navbar-nav" role="list">
+        <li><a href="{{ url_for('index') }}#home" class="nav-link">Home</a></li>
+        <li><a href="{{ url_for('index') }}#collection" class="nav-link">Collection</a></li>
+        <li><a href="{{ url_for('index') }}#our-story" class="nav-link">Our Story</a></li>
+        <li><a href="{{ url_for('index') }}#contact" class="nav-link">Contact</a></li>
+      </ul>
+      <div class="navbar-actions">
+        <div class="navbar-user-dropdown">
+          <button class="navbar-user-btn">
+            <span class="user-avatar-initial">{{ current_user.name[0] | upper }}</span>
+            <span>{{ current_user.name.split()[0] }}</span>
+          </button>
+          <div class="user-dropdown-menu">
+            <a href="{{ url_for('profile') }}" class="dropdown-item">My Profile</a>
+            <a href="{{ url_for('my_orders') }}" class="dropdown-item">Order History</a>
+            {% if is_admin %}
+            <a href="{{ url_for('admin_dashboard') }}" class="dropdown-item admin-link">Admin Atelier</a>
+            {% endif %}
+            <div class="dropdown-divider"></div>
+            <a href="{{ url_for('logout') }}" class="dropdown-item">Sign Out</a>
+          </div>
+        </div>
+
+        <a href="{{ url_for('cart') }}" class="icon-btn cart-icon-btn" id="cart-btn" aria-label="Shopping bag">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 0 1-8 0"/>
+          </svg>
+          <span class="cart-count" id="cart-count">0</span>
+        </a>
+        <button class="icon-btn hamburger" id="menu-btn" aria-label="Open navigation menu" aria-expanded="false"
+          aria-controls="mobile-menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+    <ul role="list">
+      <li><a href="{{ url_for('index') }}#home" class="mobile-nav-link">Home</a></li>
+      <li><a href="{{ url_for('index') }}#collection" class="mobile-nav-link">Collection</a></li>
+      <li><a href="{{ url_for('index') }}#olfactory" class="mobile-nav-link">Atelier</a></li>
+      <li><a href="{{ url_for('index') }}#our-story" class="mobile-nav-link">Our Story</a></li>
+      <li><a href="{{ url_for('index') }}#contact" class="mobile-nav-link">Contact</a></li>
+      <li><a href="{{ url_for('cart') }}" class="mobile-nav-link" style="color:var(--color-gold);">My Bag</a></li>
+      <li class="mobile-auth-divider"></li>
+      {% if current_user %}
+      <li><span class="mobile-nav-link" style="color:var(--color-gold-light);font-style:italic;">Welcome, {{ current_user.name }}</span></li>
+      <li><a href="{{ url_for('profile') }}" class="mobile-nav-auth-link">My Profile</a></li>
+      <li><a href="{{ url_for('my_orders') }}" class="mobile-nav-auth-link">My Orders</a></li>
+      {% if is_admin %}
+      <li><a href="{{ url_for('admin_dashboard') }}" class="mobile-nav-auth-link" style="color:var(--color-gold);">Admin Dashboard</a></li>
+      {% endif %}
+      <li><a href="{{ url_for('logout') }}" class="mobile-nav-logout">Logout</a></li>
+      {% else %}
+      <li><a href="{{ url_for('login') }}" class="mobile-nav-auth-link">Login</a></li>
+      <li><a href="{{ url_for('signup') }}" class="mobile-nav-auth-link">Sign Up</a></li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <main class="checkout-page" id="checkout-page">
+    <div class="checkout-inner">
+
+      <div class="checkout-header">
+        <p class="checkout-eyebrow">Haute Parfumerie &bull; White-Glove Handover</p>
+        <h1 class="checkout-title">Complete Your Order.</h1>
+      </div>
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div style="margin-bottom:1.5rem;">
+        {% for category, message in messages %}
+        <div class="flash flash-{{ category }}" style="margin-bottom:0.5rem;">
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% endwith %}
+
+      <div class="checkout-grid">
+
+        <!-- Left: Delivery & Payment Details Form -->
+        <div class="checkout-form-card">
+          <form id="checkout-form" method="POST" action="{{ url_for('checkout') }}">
+
+            <input type="hidden" name="cart_data" id="cart-data-input" />
+            <input type="hidden" name="coupon_code" id="coupon-code-field" value="" />
+
+            <!-- Contact Information -->
+            <p class="form-section-title">Client Information</p>
+            <div class="form-grid">
+              <div class="form-field full-width">
+                <label class="form-label" for="full_name">Full Name *</label>
+                <input class="form-input" type="text" id="full_name" name="full_name"
+                  placeholder="e.g. Lord Julian Sterling"
+                  value="{{ form.full_name if form else profile.name }}" required />
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="co-email">Email Address *</label>
+                <input class="form-input" type="email" id="co-email" name="email"
+                  placeholder="julian@example.com"
+                  value="{{ form.email if form else profile.email }}" required />
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="phone">Contact Telephone *</label>
+                <input class="form-input" type="tel" id="phone" name="phone"
+                  placeholder="+33 6 12 34 56 78 / +91 98200 12345"
+                  value="{{ form.phone if form else profile.phone }}" required />
+              </div>
+            </div>
+
+            <div style="height:1.5rem;"></div>
+
+            <!-- Delivery Address -->
+            <p class="form-section-title">White-Glove Delivery Destination</p>
+            <div class="form-grid">
+              <div class="form-field full-width">
+                <label class="form-label" for="address">Street Address *</label>
+                <input class="form-input" type="text" id="address" name="address"
+                  placeholder="Residence, Estate, Apartment Suite"
+                  value="{{ form.address if form else profile.address }}" required />
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="city">City / District *</label>
+                <input class="form-input" type="text" id="city" name="city"
+                  placeholder="Paris / Mumbai / London"
+                  value="{{ form.city if form else profile.city }}" required />
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="state">State / Province *</label>
+                <input class="form-input" type="text" id="state" name="state"
+                  placeholder="Île-de-France / Maharashtra"
+                  value="{{ form.state if form else profile.state }}" required />
+              </div>
+
+              <div class="form-field full-width">
+                <label class="form-label" for="pincode">Postal / ZIP Code *</label>
+                <input class="form-input" type="text" id="pincode" name="pincode"
+                  placeholder="75008 / 400001"
+                  value="{{ form.pincode if form else profile.pincode }}" required />
+              </div>
+            </div>
+
+            <div style="margin-top:1.2rem;">
+              <label style="display:flex;align-items:center;gap:0.6rem;font-size:0.75rem;color:var(--color-muted);cursor:pointer;">
+                <input type="checkbox" name="save_info" checked style="accent-color:var(--color-gold);" />
+                Save this delivery destination to my ELORA profile
+              </label>
+            </div>
+
+            <div style="height:1.8rem;"></div>
+
+            <!-- Payment Options -->
+            <p class="form-section-title">Payment Method</p>
+            <div style="display:flex;flex-direction:column;gap:0.75rem;">
+              <label class="payment-option-card">
+                <input type="radio" name="payment_method" value="Cash on Delivery" checked style="accent-color:var(--color-gold);" />
+                <div>
+                  <strong style="font-size:0.82rem;color:var(--color-text);display:block;">Cash on Delivery (White-Glove Handover)</strong>
+                  <span style="font-size:0.7rem;color:var(--color-muted);">Pay in cash or bank transfer upon discreet courier delivery.</span>
+                </div>
+              </label>
+
+              <label class="payment-option-card">
+                <input type="radio" name="payment_method" value="Concierge Card Terminal" style="accent-color:var(--color-gold);" />
+                <div>
+                  <strong style="font-size:0.82rem;color:var(--color-text);display:block;">Luxury Concierge Card Terminal</strong>
+                  <span style="font-size:0.7rem;color:var(--color-muted);">Our courier presents a secure contactless payment terminal.</span>
+                </div>
+              </label>
+
+              <label class="payment-option-card">
+                <input type="radio" name="payment_method" value="Instant UPI & Net Banking" style="accent-color:var(--color-gold);" />
+                <div>
+                  <strong style="font-size:0.82rem;color:var(--color-text);display:block;">Instant UPI &amp; Digital Concierge</strong>
+                  <span style="font-size:0.7rem;color:var(--color-muted);">Instant QR code &amp; digital banking confirmation upon submission.</span>
+                </div>
+              </label>
+            </div>
+
+            <div style="height:1.8rem;"></div>
+
+            <!-- Gift Wrap Option -->
+            <p class="form-section-title">Complimentary Packaging</p>
+            <label style="display:flex;align-items:flex-start;gap:0.75rem;padding:1rem;background:rgba(9,8,10,0.4);border:1px solid var(--color-border);cursor:pointer;">
+              <input type="checkbox" name="gift_wrap" style="accent-color:var(--color-gold);margin-top:0.25rem;" />
+              <div>
+                <strong style="font-size:0.82rem;color:var(--color-gold-light);display:block;">
+                  Complimentary Gold Wax-Sealed Gift Presentation
+                </strong>
+                <span style="font-size:0.72rem;color:var(--color-muted);line-height:1.6;display:block;">
+                  Hand-tied with double-faced champagne gold satin ribbon, wax seal emblem, and personalized calligraphy enclosure card.
+                </span>
+              </div>
+            </label>
+
+            <button type="submit" class="checkout-submit-btn" id="place-order-btn">
+              <span>Place Signature Order</span>
+            </button>
+
+          </form>
+        </div>
+
+        <!-- Right: Order Summary Sidebar -->
+        <aside class="order-summary-card" aria-label="Order summary">
+          <p class="summary-title">Your Atelier Selection</p>
+
+          <div id="summary-items">
+            <p id="summary-empty" style="text-align:center;color:var(--color-muted);font-size:0.8rem;padding:2rem 0;">
+              Your bag is currently empty.<br>
+              <a href="{{ url_for('cart') }}" style="color:var(--color-gold);">Return to Bag</a>
+            </p>
+          </div>
+
+          <div id="summary-totals" style="display:none;margin-top:1.5rem;">
+            <div class="summary-row">
+              <span>Selected Flacons</span>
+              <span id="summary-item-count">0</span>
+            </div>
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span id="summary-subtotal-val">$0</span>
+            </div>
+            <div class="summary-row" id="summary-discount-row" style="display:none;color:#6ec98a;">
+              <span id="summary-discount-label">Privilege Discount</span>
+              <span id="summary-discount-val">-$0</span>
+            </div>
+            <div class="summary-row">
+              <span>White-Glove Delivery</span>
+              <span style="color:var(--color-gold-light);">Complimentary</span>
+            </div>
+            <div class="summary-total-row">
+              <span class="summary-total-label">Final Order Total</span>
+              <span class="summary-total-value" id="summary-grand-total">$0</span>
+            </div>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+  </main>
+
+  <script id="elora-page-data" type="application/json">
+    {{ products_json | default('{}') | safe }}
+  </script>
+
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <script>
+  (function () {
+    "use strict";
+
+    var PRODUCTS = JSON.parse(document.getElementById("elora-page-data").textContent);
+    var cartItems = [];
+    try {
+      var stored = localStorage.getItem("elora_bag");
+      if (stored) cartItems = JSON.parse(stored) || [];
+      cartItems = cartItems.filter(function(i){ return Number(i.qty) > 0; });
+    } catch(e) { cartItems = []; }
+
+    var cartDataInput = document.getElementById("cart-data-input");
+    if (cartDataInput) cartDataInput.value = JSON.stringify(cartItems);
+
+    var couponField = document.getElementById("coupon-code-field");
+    var savedCoupon = sessionStorage.getItem("elora_coupon") || "";
+    if (couponField && savedCoupon) couponField.value = savedCoupon;
+
+    var summaryItems = document.getElementById("summary-items");
+    var summaryEmpty = document.getElementById("summary-empty");
+    var summaryTotals = document.getElementById("summary-totals");
+    var summaryCount = document.getElementById("summary-item-count");
+    var summarySub = document.getElementById("summary-subtotal-val");
+    var summaryDiscRow = document.getElementById("summary-discount-row");
+    var summaryDiscVal = document.getElementById("summary-discount-val");
+    var summaryGrand = document.getElementById("summary-grand-total");
+    var placeBtn = document.getElementById("place-order-btn");
+
+    function formatPrice(amt) {
+      var n = Number(amt);
+      return "$" + (Number.isInteger(n) ? n : n.toFixed(2));
+    }
+
+    function renderSummary() {
+      summaryItems.querySelectorAll(".summary-item").forEach(function(el){ el.remove(); });
+
+      if (cartItems.length === 0) {
+        if (summaryEmpty) summaryEmpty.style.display = "";
+        if (summaryTotals) summaryTotals.style.display = "none";
+        if (placeBtn) placeBtn.disabled = true;
+        return;
+      }
+
+      if (summaryEmpty) summaryEmpty.style.display = "none";
+      if (summaryTotals) summaryTotals.style.display = "";
+      if (placeBtn) placeBtn.disabled = false;
+
+      var subtotal = 0;
+      var totalQty = 0;
+
+      cartItems.forEach(function (item) {
+        var p = PRODUCTS[item.id] || {
+          name: item.name || "ELORA Perfume",
+          image: "/static/images/elora-hero.png",
+          price: 185
+        };
+        var unitPrice = Number(p.price);
+        var qty = Number(item.qty);
+        var itemTotal = unitPrice * qty;
+        subtotal += itemTotal;
+        totalQty += qty;
+
+        var div = document.createElement("div");
+        div.className = "summary-item";
+        div.innerHTML =
+          '<div class="summary-item-img">' +
+            '<img src="' + p.image + '" alt="' + p.name + '" width="36" height="36">' +
+          '</div>' +
+          '<div class="summary-item-info">' +
+            '<p class="summary-item-name">' + p.name + '</p>' +
+            '<p class="summary-item-qty">Qty: <span class="summary-item-qty-num">' + qty + '</span></p>' +
+          '</div>' +
+          '<span class="summary-item-price">' + formatPrice(itemTotal) + '</span>';
+        summaryItems.appendChild(div);
+      });
+
+      summaryCount.textContent = totalQty + (totalQty === 1 ? " flacon" : " flacons");
+      summarySub.textContent = formatPrice(subtotal);
+
+      // Check if coupon discount applies
+      if (savedCoupon) {
+        fetch("/api/validate-coupon", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ coupon: savedCoupon, subtotal: subtotal })
+        })
+        .then(function(res){ return res.json(); })
+        .then(function(data){
+          if (data.valid) {
+            summaryDiscRow.style.display = "flex";
+            summaryDiscVal.textContent = "-" + formatPrice(data.discount);
+            summaryGrand.textContent = formatPrice(data.new_total);
+          } else {
+            summaryGrand.textContent = formatPrice(subtotal);
+          }
+        })
+        .catch(function(){
+          summaryGrand.textContent = formatPrice(subtotal);
+        });
+      } else {
+        summaryGrand.textContent = formatPrice(subtotal);
+      }
+    }
+
+    renderSummary();
+
+    var form = document.getElementById("checkout-form");
+    if (form) {
+      form.addEventListener("submit", function(e) {
+        if (cartItems.length === 0) {
+          e.preventDefault();
+          alert("Your bag is empty. Please select a fragrance before completing your order.");
+          return;
+        }
+        if (cartDataInput) cartDataInput.value = JSON.stringify(cartItems);
+        placeBtn.disabled = true;
+        placeBtn.innerHTML = "<span>Sealing Order & Dispersing Concierge...</span>";
+      });
+    }
+  })();
+  </script>
+</body>
+</html>

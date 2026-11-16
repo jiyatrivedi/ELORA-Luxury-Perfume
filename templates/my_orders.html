@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Review your ELORA order history and track deliveries." />
+  <title>My Orders | ELORA Luxury Perfume</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <style>
+    .order-meta-value, .order-meta-value.gold, .order-number {
+      font-family: 'Poppins', sans-serif;
+    }
+    .orders-page {
+      min-height: 100vh;
+      background: radial-gradient(ellipse 70% 40% at 50% 0%, rgba(30,18,8,0.55) 0%, transparent 65%), var(--color-bg);
+      padding: calc(var(--nav-h) + 3.5rem) clamp(1rem, 4vw, 3rem) 6rem;
+    }
+    .orders-inner { max-width: 960px; margin: 0 auto; }
+    .orders-header { margin-bottom: 2.5rem; }
+    .orders-eyebrow {
+      font-size: 0.6rem; font-weight: 500; letter-spacing: 0.38em;
+      text-transform: uppercase; color: var(--color-gold);
+      display: flex; align-items: center; gap: 0.9rem; margin-bottom: 0.8rem;
+    }
+    .orders-eyebrow::before {
+      content:''; display:block; width:24px; height:1px;
+      background:var(--color-gold); flex-shrink:0;
+    }
+    .orders-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 300; color: var(--color-text); line-height: 1.1;
+    }
+    .orders-list { display: flex; flex-direction: column; gap: 1.5rem; }
+    .order-card {
+      background: rgba(22,18,17,0.75); border: 1px solid var(--color-border);
+      position: relative; transition: all var(--ease);
+    }
+    .order-card:hover { border-color: rgba(201, 169, 110, 0.4); }
+    .order-card::before {
+      content:''; position:absolute; top:0; left:0; width:40px; height:1px;
+      background:linear-gradient(90deg, var(--color-gold), transparent);
+      transition: width var(--ease);
+    }
+    .order-card:hover::before { width: 90px; }
+    .order-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 0.75rem; padding: 1.2rem 1.8rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .order-number {
+      font-family: var(--font-serif); font-size: 1.05rem;
+      color: var(--color-gold); letter-spacing: 0.05em;
+    }
+    .order-date {
+      font-size: 0.62rem; letter-spacing: 0.18em;
+      color: var(--color-muted); text-transform: uppercase;
+    }
+    .order-card-body {
+      padding: 1.4rem 1.8rem; display: flex; align-items: center;
+      justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    }
+    .order-card-meta { display: flex; gap: 2.5rem; flex-wrap: wrap; }
+    .order-meta-item { display: flex; flex-direction: column; gap: 0.3rem; }
+    .order-meta-label {
+      font-size: 0.52rem; font-weight: 500; letter-spacing: 0.28em;
+      text-transform: uppercase; color: var(--color-muted);
+    }
+    .order-meta-value { font-size: 0.9rem; color: var(--color-text); }
+    .order-meta-value.gold { font-family: var(--font-serif); color: var(--color-gold); font-size: 1.15rem; }
+
+    @media (max-width: 640px) {
+      .order-card-header { flex-direction: column; align-items: flex-start; }
+      .order-card-meta { gap: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar scrolled" id="navbar" role="navigation" aria-label="Main navigation">
+    <div class="navbar-inner">
+      <a href="{{ url_for('index') }}" class="navbar-logo" aria-label="ELORA home">ELORA</a>
+      <ul class="navbar-nav" role="list">
+        <li><a href="{{ url_for('index') }}#home" class="nav-link">Home</a></li>
+        <li><a href="{{ url_for('index') }}#collection" class="nav-link">Collection</a></li>
+        <li><a href="{{ url_for('index') }}#our-story" class="nav-link">Our Story</a></li>
+        <li><a href="{{ url_for('index') }}#contact" class="nav-link">Contact</a></li>
+      </ul>
+      <div class="navbar-actions">
+        <div class="navbar-user-dropdown">
+          <button class="navbar-user-btn">
+            <span class="user-avatar-initial">{{ current_user.name[0] | upper }}</span>
+            <span>{{ current_user.name.split()[0] }}</span>
+          </button>
+          <div class="user-dropdown-menu">
+            <a href="{{ url_for('profile') }}" class="dropdown-item">My Profile</a>
+            <a href="{{ url_for('my_orders') }}" class="dropdown-item" style="color:var(--color-gold);">Order History</a>
+            {% if is_admin %}
+            <a href="{{ url_for('admin_dashboard') }}" class="dropdown-item admin-link">Admin Atelier</a>
+            {% endif %}
+            <div class="dropdown-divider"></div>
+            <a href="{{ url_for('logout') }}" class="dropdown-item">Sign Out</a>
+          </div>
+        </div>
+
+        <a href="{{ url_for('cart') }}" class="icon-btn cart-icon-btn" id="cart-btn" aria-label="Shopping bag">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 0 1-8 0"/>
+          </svg>
+          <span class="cart-count" id="cart-count">0</span>
+        </a>
+        <button class="icon-btn hamburger" id="menu-btn" aria-label="Open navigation menu" aria-expanded="false"
+          aria-controls="mobile-menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+    <ul role="list">
+      <li><a href="{{ url_for('index') }}#home" class="mobile-nav-link">Home</a></li>
+      <li><a href="{{ url_for('index') }}#collection" class="mobile-nav-link">Collection</a></li>
+      <li><a href="{{ url_for('index') }}#olfactory" class="mobile-nav-link">Atelier</a></li>
+      <li><a href="{{ url_for('index') }}#our-story" class="mobile-nav-link">Our Story</a></li>
+      <li><a href="{{ url_for('index') }}#contact" class="mobile-nav-link">Contact</a></li>
+      <li><a href="{{ url_for('cart') }}" class="mobile-nav-link" style="color:var(--color-gold);">My Bag</a></li>
+      <li class="mobile-auth-divider"></li>
+      {% if current_user %}
+      <li><span class="mobile-nav-link" style="color:var(--color-gold-light);font-style:italic;">Welcome, {{ current_user.name }}</span></li>
+      <li><a href="{{ url_for('profile') }}" class="mobile-nav-auth-link">My Profile</a></li>
+      <li><a href="{{ url_for('my_orders') }}" class="mobile-nav-auth-link">My Orders</a></li>
+      {% if is_admin %}
+      <li><a href="{{ url_for('admin_dashboard') }}" class="mobile-nav-auth-link" style="color:var(--color-gold);">Admin Dashboard</a></li>
+      {% endif %}
+      <li><a href="{{ url_for('logout') }}" class="mobile-nav-logout">Logout</a></li>
+      {% else %}
+      <li><a href="{{ url_for('login') }}" class="mobile-nav-auth-link">Login</a></li>
+      <li><a href="{{ url_for('signup') }}" class="mobile-nav-auth-link">Sign Up</a></li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <main class="orders-page" id="orders-page">
+    <div class="orders-inner">
+
+      <div class="orders-header">
+        <p class="orders-eyebrow">Your Atelier Account</p>
+        <h1 class="orders-title">Order History.</h1>
+      </div>
+
+      {% if orders %}
+        <div class="orders-list" role="list">
+          {% for order in orders %}
+            <article class="order-card" role="listitem" aria-label="Order {{ order.order_number }}">
+
+              <div class="order-card-header">
+                <div>
+                  <p class="order-number">{{ order.order_number }}</p>
+                  <p class="order-date">Placed on {{ order.created_at[:10] }}</p>
+                </div>
+                <span class="status-badge status-{{ order.status }}" style="text-transform:capitalize;">
+                  {{ order.status }}
+                </span>
+              </div>
+
+              <div class="order-card-body">
+                <div class="order-card-meta">
+                  <div class="order-meta-item">
+                    <span class="order-meta-label">Flacons</span>
+                    <span class="order-meta-value">{{ order.item_count }}</span>
+                  </div>
+                  <div class="order-meta-item">
+                    <span class="order-meta-label">Total</span>
+                    <span class="order-meta-value gold">${{ order.total | int }}</span>
+                  </div>
+                  <div class="order-meta-item">
+                    <span class="order-meta-label">Destination</span>
+                    <span class="order-meta-value">{{ order.city }}, {{ order.state }}</span>
+                  </div>
+                </div>
+
+                <a href="{{ url_for('order_confirmation', order_number=order.order_number) }}"
+                   class="btn-discover" style="padding:0.65rem 1.4rem;">
+                  View Receipt &amp; Tracking
+                </a>
+              </div>
+
+            </article>
+          {% endfor %}
+        </div>
+
+        <div style="margin-top:3rem;text-align:center;">
+          <a href="{{ url_for('index') }}#collection" class="btn-primary" style="padding:0.9rem 2.4rem;">
+            Explore The Collection
+          </a>
+        </div>
+
+      {% else %}
+        <div class="orders-empty" style="text-align:center;padding:5rem 1rem;">
+          <h2 style="font-family:var(--font-serif);font-size:2rem;color:var(--color-text);margin-bottom:0.8rem;">
+            No Orders Yet
+          </h2>
+          <p style="font-size:0.85rem;color:var(--color-muted);max-width:340px;margin:0 auto 2rem;line-height:1.8;">
+            Your past orders and tracking details will appear here. Discover our signature fragrances.
+          </p>
+          <a href="{{ url_for('index') }}#collection" class="btn-primary" style="padding:0.9rem 2.5rem;">
+            Explore Collection
+          </a>
+        </div>
+      {% endif %}
+
+    </div>
+  </main>
+
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Your ELORA order confirmation and white-glove delivery tracking." />
+  <title>Order Confirmed | ELORA Luxury Perfume</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <style>
+    .ci-qty, .ci-price, .ci-sub, .confirm-total-value, .meta-value {
+      font-family: 'Poppins', sans-serif;
+    }
+    .confirm-page {
+      min-height: 100vh;
+      background: radial-gradient(ellipse 65% 40% at 50% 0%, rgba(30,18,8,0.55) 0%, transparent 65%), var(--color-bg);
+      padding: calc(var(--nav-h) + 3.5rem) clamp(1rem, 4vw, 3rem) 6rem;
+    }
+    .confirm-inner { max-width: 860px; margin: 0 auto; }
+    .confirm-banner {
+      display: flex; flex-direction: column; align-items: center;
+      text-align: center; margin-bottom: 3rem;
+    }
+    .confirm-icon-wrap {
+      width: 72px; height: 72px; border-radius: 50%;
+      border: 1px solid rgba(201,169,110,0.35);
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(201,169,110,0.07); margin-bottom: 1.5rem;
+      animation: scaleIn 0.5s ease forwards;
+    }
+    @keyframes scaleIn {
+      from { transform: scale(0.7); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .confirm-eyebrow {
+      font-size: 0.6rem; font-weight: 500; letter-spacing: 0.38em;
+      text-transform: uppercase; color: var(--color-gold); margin-bottom: 0.8rem;
+    }
+    .confirm-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 300; color: var(--color-text); line-height: 1.15; margin-bottom: 0.8rem;
+    }
+    .confirm-subtitle {
+      font-size: 0.85rem; color: var(--color-muted); line-height: 1.8; max-width: 480px;
+    }
+
+    .confirm-meta {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; background: var(--color-border);
+      border: 1px solid var(--color-border); margin-bottom: 2.5rem;
+    }
+    .confirm-meta-cell {
+      background: rgba(22,18,17,0.85); padding: 1.2rem 1.4rem;
+      display: flex; flex-direction: column; gap: 0.35rem;
+    }
+    .meta-label {
+      font-size: 0.55rem; font-weight: 500; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--color-muted);
+    }
+    .meta-value { font-size: 0.85rem; color: var(--color-text); }
+    .meta-value.gold { color: var(--color-gold); }
+
+    .confirm-section {
+      background: rgba(22,18,17,0.7); border: 1px solid var(--color-border);
+      margin-bottom: 1.5rem; position: relative;
+    }
+    .confirm-section-header {
+      font-size: 0.6rem; font-weight: 500; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--color-gold);
+      padding: 1.2rem 1.8rem; border-bottom: 1px solid var(--color-border);
+    }
+
+    .confirm-items-table { width: 100%; border-collapse: collapse; }
+    .confirm-items-table th {
+      font-size: 0.52rem; letter-spacing: 0.28em; text-transform: uppercase;
+      color: var(--color-muted); padding: 0.9rem 1.8rem; text-align: left;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .confirm-items-table th:last-child { text-align: right; }
+    .confirm-items-table td {
+      padding: 1.1rem 1.8rem; border-bottom: 1px solid var(--color-border);
+      vertical-align: middle;
+    }
+    .confirm-items-table tr:last-child td { border-bottom: none; }
+
+    .ci-product-cell { display: flex; align-items: center; gap: 1rem; }
+    .ci-img {
+      width: 48px; height: 48px; background: rgba(9,8,10,0.8);
+      border: 1px solid var(--color-border); display: flex;
+      align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .ci-img img { width: 36px; height: 36px; object-fit: contain; }
+    .ci-name { font-family: var(--font-serif); font-size: 1.05rem; color: var(--color-text); }
+    .ci-qty { font-size: 0.85rem; color: var(--color-muted); }
+    .ci-price { font-size: 0.88rem; color: var(--color-gold-light); }
+    .ci-sub { font-size: 0.95rem; font-weight: 500; color: var(--color-gold); text-align: right; }
+
+    .confirm-total-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: 1.25rem 1.8rem; border-top: 1px solid var(--color-border);
+    }
+    .confirm-total-label { font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--color-muted); }
+    .confirm-total-value { font-family: var(--font-serif); font-size: 1.7rem; color: var(--color-gold); }
+
+    .confirm-address {
+      font-size: 0.85rem; color: var(--color-text); line-height: 1.9; padding: 1.4rem 1.8rem;
+    }
+
+    .confirm-actions {
+      display: flex; gap: 1rem; margin-top: 2.5rem; flex-wrap: wrap;
+    }
+
+    @media print {
+      body { background: #fff !important; color: #000 !important; }
+      .navbar, .site-footer, .confirm-actions, .order-stepper { display: none !important; }
+      .confirm-page { padding: 0 !important; background: none !important; }
+      .confirm-section, .confirm-meta { border: 1px solid #ccc !important; background: #fff !important; }
+      .confirm-title, .meta-value, .ci-name, .confirm-total-value { color: #000 !important; }
+    }
+
+    @media (max-width: 768px) {
+      .confirm-meta { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar scrolled" id="navbar" role="navigation" aria-label="Main navigation">
+    <div class="navbar-inner">
+      <a href="{{ url_for('index') }}" class="navbar-logo" aria-label="ELORA home">ELORA</a>
+      <ul class="navbar-nav" role="list">
+        <li><a href="{{ url_for('index') }}#home" class="nav-link">Home</a></li>
+        <li><a href="{{ url_for('index') }}#collection" class="nav-link">Collection</a></li>
+        <li><a href="{{ url_for('index') }}#our-story" class="nav-link">Our Story</a></li>
+        <li><a href="{{ url_for('index') }}#contact" class="nav-link">Contact</a></li>
+      </ul>
+      <div class="navbar-actions">
+        <div class="navbar-user-dropdown">
+          <button class="navbar-user-btn">
+            <span class="user-avatar-initial">{{ current_user.name[0] | upper }}</span>
+            <span>{{ current_user.name.split()[0] }}</span>
+          </button>
+          <div class="user-dropdown-menu">
+            <a href="{{ url_for('profile') }}" class="dropdown-item">My Profile</a>
+            <a href="{{ url_for('my_orders') }}" class="dropdown-item">Order History</a>
+            {% if is_admin %}
+            <a href="{{ url_for('admin_dashboard') }}" class="dropdown-item admin-link">Admin Atelier</a>
+            {% endif %}
+            <div class="dropdown-divider"></div>
+            <a href="{{ url_for('logout') }}" class="dropdown-item">Sign Out</a>
+          </div>
+        </div>
+
+        <a href="{{ url_for('cart') }}" class="icon-btn cart-icon-btn" id="cart-btn" aria-label="Shopping bag">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 0 1-8 0"/>
+          </svg>
+          <span class="cart-count" id="cart-count">0</span>
+        </a>
+        <button class="icon-btn hamburger" id="menu-btn" aria-label="Open navigation menu" aria-expanded="false"
+          aria-controls="mobile-menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+    <ul role="list">
+      <li><a href="{{ url_for('index') }}#home" class="mobile-nav-link">Home</a></li>
+      <li><a href="{{ url_for('index') }}#collection" class="mobile-nav-link">Collection</a></li>
+      <li><a href="{{ url_for('index') }}#olfactory" class="mobile-nav-link">Atelier</a></li>
+      <li><a href="{{ url_for('index') }}#our-story" class="mobile-nav-link">Our Story</a></li>
+      <li><a href="{{ url_for('index') }}#contact" class="mobile-nav-link">Contact</a></li>
+      <li><a href="{{ url_for('cart') }}" class="mobile-nav-link" style="color:var(--color-gold);">My Bag</a></li>
+      <li class="mobile-auth-divider"></li>
+      {% if current_user %}
+      <li><span class="mobile-nav-link" style="color:var(--color-gold-light);font-style:italic;">Welcome, {{ current_user.name }}</span></li>
+      <li><a href="{{ url_for('profile') }}" class="mobile-nav-auth-link">My Profile</a></li>
+      <li><a href="{{ url_for('my_orders') }}" class="mobile-nav-auth-link">My Orders</a></li>
+      {% if is_admin %}
+      <li><a href="{{ url_for('admin_dashboard') }}" class="mobile-nav-auth-link" style="color:var(--color-gold);">Admin Dashboard</a></li>
+      {% endif %}
+      <li><a href="{{ url_for('logout') }}" class="mobile-nav-logout">Logout</a></li>
+      {% else %}
+      <li><a href="{{ url_for('login') }}" class="mobile-nav-auth-link">Login</a></li>
+      <li><a href="{{ url_for('signup') }}" class="mobile-nav-auth-link">Sign Up</a></li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <main class="confirm-page" id="confirm-page">
+    <div class="confirm-inner">
+
+      <!-- Success Banner -->
+      <div class="confirm-banner">
+        <div class="confirm-icon-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"
+            fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <p class="confirm-eyebrow">Order Placed With Distinction</p>
+        <h1 class="confirm-title">Thank you, {{ order.full_name.split()[0] }}.</h1>
+        <p class="confirm-subtitle">
+          Your order has been registered in the ELORA Atelier ledger and is being prepared with absolute craftsmanship.
+          A confirmation receipt has been dispatched to <strong>{{ order.email }}</strong>.
+        </p>
+      </div>
+
+      <!-- Visual Order Stepper -->
+      <div class="order-stepper" aria-label="Order Tracking Progress">
+        <div class="stepper-step completed">
+          <div class="step-circle">&#10003;</div>
+          <span class="step-label">Order Confirmed</span>
+        </div>
+        <div class="stepper-step {% if order.status in ['processing', 'dispatched', 'delivered'] %}completed{% else %}active{% endif %}">
+          <div class="step-circle">2</div>
+          <span class="step-label">Atelier Bottling</span>
+        </div>
+        <div class="stepper-step {% if order.status in ['dispatched', 'delivered'] %}completed{% elif order.status == 'processing' %}active{% endif %}">
+          <div class="step-circle">3</div>
+          <span class="step-label">Wax-Sealed</span>
+        </div>
+        <div class="stepper-step {% if order.status == 'delivered' %}completed{% elif order.status == 'dispatched' %}active{% endif %}">
+          <div class="step-circle">4</div>
+          <span class="step-label">With Courier</span>
+        </div>
+        <div class="stepper-step {% if order.status == 'delivered' %}completed active{% endif %}">
+          <div class="step-circle">5</div>
+          <span class="step-label">Handover Complete</span>
+        </div>
+      </div>
+
+      <!-- Order Metadata -->
+      <div class="confirm-meta" role="region" aria-label="Order details">
+        <div class="confirm-meta-cell">
+          <span class="meta-label">Order Number</span>
+          <span class="meta-value gold">{{ order.order_number }}</span>
+        </div>
+        <div class="confirm-meta-cell">
+          <span class="meta-label">Date Placed</span>
+          <span class="meta-value">{{ order.created_at[:10] }}</span>
+        </div>
+        <div class="confirm-meta-cell">
+          <span class="meta-label">Payment Method</span>
+          <span class="meta-value">{{ order.payment_method }}</span>
+        </div>
+        <div class="confirm-meta-cell">
+          <span class="meta-label">Status</span>
+          <span class="meta-value status-badge status-{{ order.status }}" style="text-transform:capitalize;">
+            {{ order.status }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Ordered Items -->
+      <div class="confirm-section">
+        <p class="confirm-section-header">Ordered Flacons</p>
+        <div class="confirm-table-wrap">
+        <table class="confirm-items-table" aria-label="Items in your order">
+          <thead>
+            <tr>
+              <th scope="col">Product</th>
+              <th scope="col">Unit Price</th>
+              <th scope="col">Qty</th>
+              <th scope="col">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+            <tr>
+              <td>
+                <div class="ci-product-cell">
+                  <div class="ci-img">
+                    <img src="{{ item.image or '/static/images/elora-hero.png' }}"
+                      alt="{{ item.product_name }}" width="36" height="36" />
+                  </div>
+                  <div>
+                    <p class="ci-name">{{ item.product_name }}</p>
+                    <p style="font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--color-muted);">
+                      100 ml &bull; Eau de Parfum
+                    </p>
+                  </div>
+                </div>
+              </td>
+              <td class="ci-price">${{ item.unit_price | int }}</td>
+              <td class="ci-qty">{{ item.quantity }}</td>
+              <td class="ci-sub">${{ item.subtotal | int }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        </div>
+
+        {% if order.discount and order.discount > 0 %}
+        <div style="display:flex;justify-content:space-between;padding:0.75rem 1.8rem;color:#6ec98a;font-size:0.85rem;">
+          <span>VIP Privilege Discount Applied</span>
+          <span>-${{ order.discount | int }}</span>
+        </div>
+        {% endif %}
+
+        <div class="confirm-total-row">
+          <span class="confirm-total-label">Final Order Total</span>
+          <span class="confirm-total-value">${{ order.total | int }}</span>
+        </div>
+      </div>
+
+      <!-- Delivery Details -->
+      <div class="confirm-section">
+        <p class="confirm-section-header">Delivery Destination</p>
+        <div class="confirm-address">
+          <strong style="color:var(--color-gold-light);font-size:1.1rem;display:block;margin-bottom:0.25rem;">
+            {{ order.full_name }}
+          </strong>
+          {{ order.address }},<br>
+          {{ order.city }}, {{ order.state }} &mdash; {{ order.pincode }}<br>
+          <span style="color:var(--color-muted);">Telephone: {{ order.phone }}</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="confirm-actions">
+        <button type="button" class="btn-primary" onclick="window.print()" style="padding:0.85rem 2rem;">
+          Print Atelier Receipt
+        </button>
+        <a href="{{ url_for('my_orders') }}" class="btn-discover" style="padding:0.85rem 2rem;display:inline-block;">
+          View Order History
+        </a>
+        <a href="{{ url_for('index') }}#collection" class="btn-discover" style="padding:0.85rem 2rem;display:inline-block;border-color:var(--color-border);color:var(--color-muted);">
+          Continue Shopping
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <script>
+    (function () {
+      // Clear localStorage bag after confirmed order
+      try {
+        localStorage.removeItem("elora_bag");
+        sessionStorage.removeItem("elora_coupon");
+      } catch (e) {}
+
+      var badge = document.getElementById("cart-count");
+      if (badge) {
+        badge.textContent = "0";
+        badge.classList.remove("visible");
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>An Uncharted Olfactory Path | ELORA Luxury Perfume</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <style>
+    .error-page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      background: radial-gradient(ellipse 65% 50% at 50% 50%, rgba(30,18,8,0.6) 0%, #09080a 70%);
+    }
+  </style>
+</head>
+<body>
+  <div class="error-page">
+    <div style="max-width:540px;">
+      <p style="font-family:var(--font-serif);font-size:5rem;color:var(--color-gold);font-weight:300;line-height:1;margin-bottom:1rem;">
+        {% if is_500 %}500{% else %}404{% endif %}
+      </p>
+      <p style="font-size:0.6rem;letter-spacing:0.35em;text-transform:uppercase;color:var(--color-muted);margin-bottom:1rem;">
+        {% if is_500 %}Atelier Distillation Interrupted{% else %}An Uncharted Olfactory Path{% endif %}
+      </p>
+      <h1 style="font-family:var(--font-serif);font-size:2.2rem;font-weight:300;color:var(--color-text);margin-bottom:1.2rem;">
+        {% if is_500 %}Our master perfumers are tending to this formulation.{% else %}The fragrance note you seek has drifted away.{% endif %}
+      </h1>
+      <p style="font-size:0.85rem;color:var(--color-muted);line-height:1.8;margin-bottom:2.5rem;">
+        Allow us to guide you back to our Signature Collection and the rare aromas of the Grasse Atelier.
+      </p>
+      <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+        <a href="{{ url_for('index') }}" class="btn-primary" style="padding:0.9rem 2.2rem;">
+          Return to Atelier
+        </a>
+        <a href="{{ url_for('index') }}#collection" class="btn-discover" style="padding:0.9rem 2.2rem;">
+          Explore Collection
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+
